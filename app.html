@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Health Tracker</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #667eea;
+            padding: 20px;
+        }
+        .box {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #764ba2;
+        }
+        .stats {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .stat {
+            background: #667eea;
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            flex: 1;
+        }
+        .stat p {
+            font-size: 24px;
+            margin: 5px 0;
+        }
+        .entry {
+            background: #f0f0f0;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 10px;
+        }
+        .success {
+            background: green;
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        h1 {
+            text-align: center;
+            color: #667eea;
+        }
+        body {
+            background-image: url('https://images.pexels.com/photos/4386466/pexels-photo-4386466.jpeg?w=1600');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>🏃 Health Tracker</h1>
+        
+        <input type="number" id="steps" placeholder="Steps">
+        <input type="number" id="water" placeholder="Water (glasses)">
+        <input type="number" id="sleep" placeholder="Sleep (hours)">
+        <button id="saveBtn">Save Data</button>
+        <div id="msg"></div>
+        
+        <div class="stats">
+            <div class="stat">
+                <h3>Total Steps</h3>
+                <p id="totalSteps">0</p>
+            </div>
+            <div class="stat">
+                <h3>Total Water</h3>
+                <p id="totalWater">0</p>
+            </div>
+            <div class="stat">
+                <h3>Avg Sleep</h3>
+                <p id="avgSleep">0</p>
+            </div>
+        </div>
+        
+        <div id="history"></div>
+    </div>
+
+    <script>
+        let data = [];
+        
+        function load() {
+            let saved = localStorage.getItem('health');
+            if(saved) {
+                data = JSON.parse(saved);
+            }
+            display();
+        }
+        
+        function save() {
+            let steps = document.getElementById('steps').value;
+            let water = document.getElementById('water').value;
+            let sleep = document.getElementById('sleep').value;
+            
+            if(steps === "" || water === "" || sleep === "") {
+                alert("Please fill all fields");
+                return;
+            }
+            
+            let now = new Date();
+            let time = now.getHours() + ":" + now.getMinutes();
+            
+            data.push({
+                steps: steps,
+                water: water,
+                sleep: sleep,
+                time: time
+            });
+            
+            localStorage.setItem('health', JSON.stringify(data));
+            
+            document.getElementById('steps').value = "";
+            document.getElementById('water').value = "";
+            document.getElementById('sleep').value = "";
+            
+            document.getElementById('msg').innerHTML = '<div class="success">✅ Saved!</div>';
+            setTimeout(() => {
+                document.getElementById('msg').innerHTML = "";
+            }, 2000);
+            
+            display();
+        }
+        
+        function display() {
+            let totalSteps = 0;
+            let totalWater = 0;
+            let totalSleep = 0;
+            let historyHtml = "";
+            
+            if(data.length === 0) {
+                document.getElementById('history').innerHTML = "<p>No data yet</p>";
+                document.getElementById('totalSteps').innerHTML = "0";
+                document.getElementById('totalWater').innerHTML = "0";
+                document.getElementById('avgSleep').innerHTML = "0";
+                return;
+            }
+            
+            for(let i = data.length-1; i >= 0; i--) {
+                let x = data[i];
+                totalSteps += parseInt(x.steps);
+                totalWater += parseInt(x.water);
+                totalSleep += parseFloat(x.sleep);
+                historyHtml += '<div class="entry">🕐 ' + x.time + ' | 🚶 ' + x.steps + ' | 💧 ' + x.water + ' | 😴 ' + x.sleep + '</div>';
+            }
+            
+            document.getElementById('history').innerHTML = historyHtml;
+            document.getElementById('totalSteps').innerHTML = totalSteps;
+            document.getElementById('totalWater').innerHTML = totalWater;
+            document.getElementById('avgSleep').innerHTML = (totalSleep / data.length).toFixed(1);
+        }
+        
+        document.getElementById('saveBtn').onclick = save;
+        
+        load();
+    </script>
+</body>
+</html>
